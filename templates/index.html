@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HemoFlow</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='resources/logopin.png') }}" >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;600;700&display=swap" rel="stylesheet">
+  <!-- <link rel="shortcut icon" href="../resources/logo.png"> -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js" type="module"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_outward" />
+  <style>
+    body { font-family: Arial, sans-serif; /* padding: 20px; */ }
+    #map { height: 400px; width: 100%; margin-top: 10px; display: none; }
+    #output { margin-top: 10px; font-size: 1rem; }
+    #loader { display: none; font-style: italic; }
+
+    .collapsible {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      padding: 14px;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 16px;
+      border-radius: 4px;
+    }
+
+    .active, .collapsible:hover {
+      background-color: #0056b3;
+    }
+
+    .content {
+      padding: 0 15px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+      border-radius: 0 0 4px 4px;
+      margin-top: 5px;
+    }
+    .donor-form {
+      max-width: 600px;          /* Form won't exceed 600px */
+      width: 90%;                /* Takes 90% of screen width on small devices */
+      margin: 50px auto;         /* Centers form horizontally */
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      background-color: #ffffffb0;
+      padding: 20px;
+      position: relative;        /* No absolute positioning */
+    }
+
+    .donor-form label {
+      display: block;            /* Each label on new line */
+      margin-bottom: 8px;
+      font-size: 1.2rem;          /* Scales with screen */
+      color: #3a3636;
+      font-weight: bold;
+    }
+
+    .donor-form select, .donor-form input {
+      width: 100%;               /* Full width of form */
+      padding: 10px;
+      border: 1px solid #11ABB0;
+      background: #e5e5eb;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 1em;
+      box-sizing: border-box;     /* Ensures padding doesn't overflow */
+    }
+
+    .donor-form button {
+      background-color: #11ABB0;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      width: 100%;                /* Button stretches full width on mobile */
+      cursor: pointer;
+    }
+
+    h2 {
+      color: #3a3636;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    /*
+    .donor-form {
+      width: 60%;
+      margin-left: 12cm;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      background-color: #ffffffb0;
+      padding: 20px;
+      height: 1100px;
+      position: absolute;
+      top: 160%;
+      left: 22%;
+      transform: translate(-40%, -40%);
+    }
+
+    .donor-form label{
+      letter-spacing: 0.2em;
+      flex-direction:row;
+      display: flex;
+      color: #3a3636;
+      text-align: right;
+      font-size: 25px;
+      font-weight: bolder;
+    }
+
+    .donor-form select {
+      width: 500px;
+      height: 40px;
+      padding: 10px;
+      border: 1px solid #11ABB0;
+      background: #e5e5eb;
+      border-radius: 5px;
+      outline: none;
+      color: #000000;
+      font-size: 1em;
+      margin: 5px 0px 50px 0px;
+      cursor: pointer;
+    }
+
+    .donor-form input {
+      width: 18cm;
+      height: 10px;
+      padding: 8px;
+      border: 1px solid #11ABB0;
+      background: #e5e5eb;
+      border-radius: 5px;
+      outline: none;
+      color: #000000;
+      font-size: 1em;
+      margin: 5px 0px 50px 0px;
+    }
+
+    .donor-form button{
+      background-color: #11ABB0;
+      border: none;
+      color: white;
+      padding: 12px 40px;
+      border-radius: 5px;
+      text-decoration:none;
+      font-size: 16px;
+
+    }
+
+    .donor-form label {
+      text-align: right;
+    }
+
+    .donor-form select {
+      width: 89%;
+    }
+   */
+
+    h2{
+      color: #3a3636;
+      font-size: 60px;
+      position: center;
+    }
+  </style>
+</head>
+<body>
+<!-- In your HTML file -->
+<nav id="navbar"> 
+    <a class="a" href="/">
+        <img src="{{ url_for('static', filename='resources/logo.png') }}" alt="HemoFlow Logo" style="height:auto; width: 120px; ">
+    </a>
+    <div class="nav-links">
+        <ul>
+        <li><a href="{{ url_for('index') }}"><b>HOME</b></a></li>
+        <li><a href="#service"><b>SERVICES</b></a></li>
+        <li><a href="#aboutdonate"><b>ABOUT DONATE</b></a></li>
+        <li><a href="#footer"><b>CONTACT US</b></a></li>
+        <li id="emergency"><a href=""><b>EMERGENCY</b></a></li>
+        </ul>                
+    </div> 
+    <div class="register">
+        <ul>
+        {% if not user_logged_in %}
+            <!-- Show these when user is NOT logged in -->
+            <li id="signin"><a href="{{ url_for('registration') }}"><b>Sign In</b></a></li>
+            <li id="signup"><a href="{{ url_for('registration') }}"><b>Sign Up</b></a></li>
+        {% else %}
+            <!-- Show this when user IS logged in -->
+            <li id="profile-icon">
+                <a href="{{ url_for('profile') }}">
+                    <i class="fas fa-user-circle" style="font-size: 30px;"></i>
+                </a>
+            </li>
+        {% endif %}
+        </ul>
+    </div>           
+</nav>
+  <section class="home" id="home">
+    <div class="homedescrip">
+      <div class="animated-text-container">
+        <div class="animated-text">
+          Get the right blood to the <br>right place at the
+          <div class="changing-words">
+            <div class="words-wrapper">
+                <div class="word">right  </div>
+                <div class="word">urgent </div>
+                <div class="word">perfect</div>
+                <div class="word">crucial</div>
+                <div class="word">critical</div>
+            </div>
+          </div>
+          <br>time.
+        </div>
+        <div class="textdescription">
+          AI-powered blood demand forecasting, inventory optimization, and precision distribution for enhanced emergency response.
+        </div>
+        <div class="homepagebuttons">
+          <a href="#aboutdonate"><button id="aboutus"><b>Know More</b></button></a>
+          <a href="{{ url_for('predict_form') }}"><button id="explorenow"><b>Explore Now</b></button></a>
+        </div>
+      </div>
+      <div class="shortdetails">
+        <div class="heading">
+          <div class="text-box">
+            <h1>HEMO<span>FLOW</span></h1>            
+          </div>
+          <div class="blood">
+            <h1>HEMO<span>FLOW</span></h1>           
+          </div>
+        </div>
+        <div class="shortdescrip"></div>
+      </div>       
+    </div>
+    <script>
+        // Words to cycle through
+        const words = document.querySelectorAll('.word');
+        const wordsWrapper = document.querySelector('.words-wrapper');
+        const wordHeight = 70; // Height of each word element
+        
+        // Set initial position
+        wordsWrapper.style.transform = 'translateY(0)';
+        
+        // Animation variables
+        let currentIndex = 0;
+        let changeCount = 0;
+        const totalChangesBeforeReset = 4; // Number of changes before reset
+        const scrollSpeed = 1500; // ms for scrolling animation
+        const pauseDuration = 3000; // ms to pause between changes
+        
+        function animateText() {
+            // Calculate next index
+            currentIndex = (currentIndex + 1) % words.length;
+            
+            // Scroll to the next word
+            wordsWrapper.style.transition = `transform ${scrollSpeed}ms cubic-bezier(0.68, -0.55, 0.27, 1.55)`;
+            wordsWrapper.style.transform = `translateY(-${currentIndex * wordHeight}px)`;
+            
+            // After scroll completes
+            setTimeout(() => {
+                changeCount++;
+                
+                // Check if we need to reset
+                if (changeCount >= totalChangesBeforeReset) {
+                    // Fast scroll back to top
+                    wordsWrapper.style.transition = `transform ${scrollSpeed/3}ms ease-out`;
+                    wordsWrapper.style.transform = 'translateY(0)';
+                    
+                    setTimeout(() => {
+                        currentIndex = 0;
+                        changeCount = 0;
+                        setTimeout(animateText, pauseDuration);
+                    }, scrollSpeed/3);
+                } else {
+                    // Continue with next change after pause
+                    setTimeout(animateText, pauseDuration);
+                }
+            }, scrollSpeed);
+        }
+        
+        // Start the animation after initial pause
+        setTimeout(animateText, 3000);
+    </script>
+  </section>
+  <section class="service" id="service">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="row1" style="z-index: 10;">
+      <a class="feature1" href="{{ url_for('predict_form') }}">
+        <div class="demand_fore">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h2>Demand <br>Forecasting</h2>
+          <!-- <hr> -->
+          <p>Advanced predictive analytics to forecast blood demand patterns based on historical data</p>
+        </div>
+        <div class="demandspace">
+        </div>
+        <div class="demand_icon">
+          <dotlottie-wc
+          src="https://lottie.host/6a4b05c0-d95a-418a-89f3-b8121fa44fd3/QPRKuM89kR.lottie"
+          style="width: 380px;height: 380px;position: relative; bottom: 40px; left: 50%; opacity: 0.7;"
+          speed="1"
+          autoplay
+          loop
+          ></dotlottie-wc>
+        </div>
+      </a>
+      <a class="feature2" href="https://www.chatbase.co/chatbot-iframe/utFrRdffGwlQd99XdpFJh?theme=dark" target="_blank">
+        <div class="demand_fore">
+          <div class="feature-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h2>AI Assistant <br>Help Desk</h2>
+          <!-- <hr> -->
+          <p>Get immediate answers to all your blood donation questions, check your eligibility in seconds</p>
+        </div>
+        <div class="demandspace">
+        </div>
+        <div class="demand_icon">
+          <dotlottie-wc
+          src="https://lottie.host/d671ba3b-d015-459f-8137-4f5e3af9caa8/dedI39pJPq.lottie"
+          style="width: 400px;height: 400px;position: relative; bottom: 40px; left: 50%; opacity: 0.7;"
+          speed="0.5"
+          autoplay
+          loop
+          ></dotlottie-wc>
+        </div>
+      </a>
+
+      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+     <section class="service" id="service">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="row1" style="z-index: 10;">
+      <a class="feature1" href="{{ url_for('predict_form') }}">
+        <div class="demand_fore">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h2>Demand <br>Forecasting</h2>
+         
+          <p>Advanced predictive analytics to forecast blood demand patterns based on historical data</p>
+        </div>
+        <div class="demandspace">
+        </div>
+        <div class="demand_icon">
+          <dotlottie-wc
+          src="https://lottie.host/6a4b05c0-d95a-418a-89f3-b8121fa44fd3/QPRKuM89kR.lottie"
+          style="width: 380px;height: 380px;position: relative; bottom: 40px; left: 50%; opacity: 0.7;"
+          speed="1"
+          autoplay
+          loop
+          ></dotlottie-wc>
+        </div>
+      </a> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    <div class="row2" style="z-index: 10;">
+    <div class="feature3" id="feature3">
+      <div class="alwaysdiaplay">
+        <div class="demand_fore">
+          <div class="feature-icon">
+            <i class="fas fa-tint"></i>
+          </div>
+          <h2>Check Real-Time Blood Supply Levels <br>and Find a Bank Near You</h2>
+          <!-- <hr> -->
+          <p>Our predictive technology shows real-time blood availability at nearby banks, making your donation search quick and successful. Our predictive technology shows real-time blood availability</p>
+          <button id="tryNowBtn">Try Now<span class="material-symbols-outlined">arrow_outward</span></button>
+        </div>
+        <div class="demandspace">
+          <!-- <button>Expand</button> -->
+        </div>
+        <div class="demand_icon">
+          <dotlottie-wc
+          src="https://lottie.host/a306bf98-de19-465a-b7d0-d2b19401f21a/ghEAWi7NXE.lottie"
+          style="width: 400px;height: 400px;position: relative; bottom: 30px; left: 40%; opacity: 0.7;"
+          speed="1"
+          autoplay
+          loop
+          ></dotlottie-wc>
+        </div>
+        <div class="mapfeature">
+          <div class="animation-wrapper">
+            <div class="slide active">
+              <div class="step-num">1</div>
+              <h3 class="step-ttl">Historical Data Analysis</h3>
+              <p class="step-dec">We analyze patterns from past donation records, seasonal trends, and usage rates.</p>
+            </div>
+                  
+            <div class="slide">
+              <div class="step-num">2</div>
+              <h3 class="step-ttl">Real-time Updates</h3>
+              <p class="step-dec">Blood banks update their inventory in real-time, providing current stock levels.</p>
+            </div>
+                  
+            <div class="slide">
+              <div class="step-num">3</div>
+              <h3 class="step-ttl">Predictive Algorithm</h3>
+              <p class="step-dec">Our machine learning model forecasts availability based on current and historical data.</p>
+            </div>
+                  
+            <div class="slide">
+              <div class="step-num">4</div>
+              <h3 class="step-ttl">Location Intelligence</h3>
+              <p class="step-dec">We map the nearest facilities with the blood type you need, saving you time.</p>
+            </div>
+                  
+            <div class="navigation-dots">
+              <div class="dot active" data-index="0"></div>
+              <div class="dot" data-index="1"></div>
+              <div class="dot" data-index="2"></div>
+              <div class="dot" data-index="3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mapexpansion" id="mapExpansion">
+            <div class="close-btn" id="closeMapBtn">
+                <i class="fas fa-times"></i>
+            </div>
+            <h2>Find the Nearest Blood Bank Location</h2>
+            <p class="state">Choose blood group and component, then use your location to see nearby blood banks with predicted availability.</p>
+            
+            <div class="inputs">
+                <div class="grid">
+                    <div class="bloodgroup">
+                        <label for="pb_blood_group">Blood Group</label>
+                        <select id="pb_blood_group">
+                            <option>O+</option>
+                            <option>A+</option>
+                            <option>B+</option>
+                            <option>AB+</option>
+                            <option>O-</option>
+                            <option>A-</option>
+                            <option>B-</option>
+                            <option>AB-</option>
+                        </select>
+                    </div>
+                    <div class="bloodcomponents">
+                        <label for="pb_component">Component</label>
+                        <select id="pb_component">
+                            <option>Packed Red Blood Cells</option>
+                            <option>Plateletes</option>
+                            <option>Fresh Frozen Plasma</option>
+                        </select>
+                    </div>
+                    <div class="radius">
+                        <label for="pb_radius">Search radius (km)</label>
+                        <input id="pb_radius" type="number" value="12" min="1">
+                    </div>
+                    <div class="findbloodbank">
+                        <label>&nbsp;</label>
+                        <button id="pb_check_btn" type="button">
+                            <i class="fas fa-location-arrow"></i> Use My Location & Check
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="map-container">
+                    <div id="pb_msg" class="status"></div>
+                    <div id="pb_map"></div>
+                    
+                    <div class="results-container" id="resultsContainer" style="display: none;">
+                        <div class="results-header">
+                            <h3 class="results-title">Nearby Blood Banks</h3>
+                            <button class="view-all-btn" id="viewAllBtn" style="display: none;">
+                                <i class="fas fa-chevron-right"></i> View All
+                            </button>
+                        </div>
+                        
+                        <div class="results-grid" id="resultsGrid">
+                            <!-- Results will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="all-results-container" id="allResultsContainer">
+                        <div class="all-results-header">
+                            <h3 class="results-title">All Nearby Blood Banks</h3>
+                            <button class="back-to-map" id="backToMapBtn">
+                                <i class="fas fa-arrow-left"></i> Back to Map
+                            </button>
+                        </div>
+                        <div class="all-results-grid" id="allResultsGrid">
+                            <!-- All results will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prebooking Modal -->
+<div class="modal-overlay" id="prebookModal">
+    <div class="prebook-modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Prebook Blood Units</h3>
+            <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <form id="prebookForm">
+            <input type="hidden" id="prebookBankName">
+            <input type="hidden" id="prebookBloodGroup">
+            <input type="hidden" id="prebookComponent">
+            
+            <!-- First Row: Patient Name -->
+            <div class="form-row">
+                <div class="form-group" style="width: 103%;">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" id="patientName" required>
+                </div>
+            </div>
+            
+            <!-- Second Row: Patient Age and Gender -->
+            <div class="form-row form-row-2 age-gender-row">
+                <div class="form-group">
+                    <label for="patientAge">Patient Age</label>
+                    <input type="number" id="patientAge" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="patientGender">Patient Gender</label>
+                    <select id="patientGender" required>
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Third Row: Contact Number -->
+            <div class="form-row">
+                <div class="form-group" style="width: 103%;">
+                    <label for="contactNumber">Contact Number</label>
+                    <input type="tel" id="contactNumber" required>
+                </div>
+            </div>
+            
+            <!-- Fourth Row: Units Required and Required Date -->
+            <div class="form-row form-row-2">
+                <div class="form-group">
+                    <label for="unitsRequired">Units Required</label>
+                    <input type="number" id="unitsRequired" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requiredDate">Required Date</label>
+                    <input type="date" id="requiredDate" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit Prebooking Request</button>
+        </form>
+    </div>
+</div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+             const serviceSection = document.querySelector('.service');
+      const particleCount = 40;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random properties
+        const size = Math.random() * 10 + 2;
+        const posX = Math.random() * 100;
+        const delay = Math.random() * 20;
+        const duration = Math.random() * 5 + 10;
+        const startPosition = Math.random() * 100; // Random vertical start position
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.top = `${startPosition}%`; // Set random start position
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        
+        serviceSection.appendChild(particle);
+    }
+
+
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        let currentSlide = 0;
+            
+        // Function to show a specific slide
+        function showSlide(index) {
+        // Remove active class from all slides and dots
+          slides.forEach(slide => {
+            slide.classList.remove('active', 'prev', 'next');
+          });
+          dots.forEach(dot => dot.classList.remove('active'));
+          // Update current slide index
+          currentSlide = index;
+          // Add appropriate classes to slides
+          slides[index].classList.add('active');
+          dots[index].classList.add('active');
+          // Set previous and next slides for animation
+          if (index > 0) {
+            slides[index - 1].classList.add('prev');
+          }
+          if (index < slides.length - 1) {
+            slides[index + 1].classList.add('next');
+          }
+        }
+
+        // Set up automatic slideshow
+        function startSlideshow() {
+          setInterval(() => {
+            let nextIndex = (currentSlide + 1) % slides.length;
+            showSlide(nextIndex);
+          }, 6000); // Change slide every 4 seconds
+        }
+            
+        // Add click events to dots
+        dots.forEach(dot => {
+          dot.addEventListener('click', function() {
+            let index = parseInt(this.getAttribute('data-index'));
+            showSlide(index);
+          });
+        });
+
+        // Initialize the slideshow
+        startSlideshow();
+        // Map expansion functionality
+        const tryNowBtn = document.getElementById('tryNowBtn');
+        const mapExpansion = document.getElementById('mapExpansion');
+        const closeMapBtn = document.getElementById('closeMapBtn');
+        const feature3 = document.getElementById('feature3');
+      
+        tryNowBtn.addEventListener('click', function() {
+          mapExpansion.classList.add('expanded');
+          feature3.classList.add('expanded');
+          // Initialize map if not already done
+          if (typeof pbMap === 'undefined') {
+            setTimeout(function() {
+              pbEnsureMap();
+            }, 100); // Small delay to allow expansion animation to complete
+          }
+        });
+      
+        closeMapBtn.addEventListener('click', function() {
+          mapExpansion.classList.remove('expanded');
+          if (feature3) feature3.classList.remove('expanded');
+          
+          // Reset the map and results
+          pbClearMarkers();
+          resultsGrid.innerHTML = '';
+          allResultsGrid.innerHTML = '';
+          document.getElementById('pb_msg').style.display = 'none';
+          document.getElementById('viewAllBtn').style.display = 'none';
+          hideAllResults();
+          
+          // Reset form values if needed
+          document.getElementById('pb_blood_group').selectedIndex = 0;
+          document.getElementById('pb_component').selectedIndex = 0;
+          document.getElementById('pb_radius').value = '12';
+        });
+      });
+    // ---- Predict Blood Availability Near Me ----
+    document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let pbMap = null;
+            let pbMarkers = [];
+            let allResults = [];
+            
+            // Map expansion functionality
+            const tryNowBtn = document.getElementById('tryNowBtn');
+            const mapExpansion = document.getElementById('mapExpansion');
+            const closeMapBtn = document.getElementById('closeMapBtn');
+            const feature3 = document.getElementById('feature3');
+            
+            // Prebooking modal elements
+            const prebookModal = document.getElementById('prebookModal');
+            const modalClose = document.getElementById('modalClose');
+            const prebookForm = document.getElementById('prebookForm');
+            
+            // Results view elements
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsGrid = document.getElementById('resultsGrid');
+            const allResultsContainer = document.getElementById('allResultsContainer');
+            const allResultsGrid = document.getElementById('allResultsGrid');
+            const viewAllBtn = document.getElementById('viewAllBtn');
+            const backToMapBtn = document.getElementById('backToMapBtn');
+            
+            // Initialize map if not already done
+            function pbEnsureMap(lat = 22.5726, lon = 88.3639, zoom = 12) {
+                if (!pbMap) {
+                    pbMap = L.map('pb_map').setView([lat, lon], zoom);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(pbMap);
+                } else {
+                    pbMap.setView([lat, lon], zoom);
+                }
+            }
+            
+            // Clear markers from map
+            function pbClearMarkers() {
+                pbMarkers.forEach(m => pbMap.removeLayer(m));
+                pbMarkers = [];
+            }
+            
+            // Add marker to map
+            function pbAddMarker(lat, lon, html) {
+                const customIcon = L.divIcon({
+                    html: '<i class="fas fa-hospital" style="color: #e53e3e; font-size: 24px;"></i>',
+                    className: 'custom-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                });
+                
+                const m = L.marker([lat, lon], {icon: customIcon}).addTo(pbMap).bindPopup(html);
+                pbMarkers.push(m);
+            }
+            
+            // Update status message
+            function updateStatus(message, type = '') {
+                const msg = document.getElementById('pb_msg');
+                msg.style.display = 'block';
+                msg.textContent = message;
+                msg.className = 'status';
+                
+                if (type === 'loading') {
+                    msg.classList.add('status-loading', 'pulse1');
+                    msg.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+                } else if (type === 'success') {
+                    msg.classList.add('status-success');
+                } else if (type === 'error') {
+                    msg.classList.add('status-error');
+                }
+            }
+            
+            // Create result card HTML
+            function createResultCard(bank, index) {
+                return `
+                    <div class="result-card">
+                        <h4 class="bank-name">${bank.name}</h4>
+                        <div class="bank-details">
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${Number(bank.distance_km).toFixed(2)} km away</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tint"></i>
+                                <span>Available units: <strong>${Number(bank.stock_after).toFixed(0)}</strong></span>
+                            </div>
+                        </div>
+                        <button class="prebook-btn" data-index="${index}">
+                            <i class="fas fa-calendar-check"></i> Prebook Now
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Display results
+            function displayResults(results) {
+                allResults = results;
+                resultsGrid.innerHTML = '';
+                allResultsGrid.innerHTML = '';
+                
+                // Show limited results in main view
+                const limitedResults = results.slice(0, 2);
+                limitedResults.forEach((bank, index) => {
+                    resultsGrid.innerHTML += createResultCard(bank, index);
+                });
+                
+                // Show all results in all results view
+                results.forEach((bank, index) => {
+                    allResultsGrid.innerHTML += createResultCard(bank, index);
+                });
+                
+                // Show view all button if there are more than 3 results
+                if (results.length > 3) {
+                    viewAllBtn.style.display = 'flex';
+                } else {
+                    viewAllBtn.style.display = 'none';
+                }
+                
+                // Show the results container
+                resultsContainer.style.display = 'flex';
+                
+                // Add event listeners to prebook buttons
+                document.querySelectorAll('.prebook-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.getAttribute('data-index');
+                        openPrebookModal(allResults[index]);
+                    });
+                });
+            }
+            
+            // Open prebook modal
+            function openPrebookModal(bank) {
+                document.getElementById('prebookBankName').value = bank.name;
+                document.getElementById('prebookBloodGroup').value = document.getElementById('pb_blood_group').value;
+                document.getElementById('prebookComponent').value = document.getElementById('pb_component').value;
+                
+                prebookModal.classList.add('active');
+            }
+            
+            // Close prebook modal
+            function closePrebookModal() {
+                prebookModal.classList.remove('active');
+                prebookForm.reset();
+            }
+            
+            // Show all results view
+            function showAllResults() {
+                allResultsContainer.classList.add('active');
+            }
+            
+            // Hide all results view
+            function hideAllResults() {
+                allResultsContainer.classList.remove('active');
+            }
+            
+            // Search for blood banks
+            document.getElementById('pb_check_btn').addEventListener('click', () => {
+                const msg = document.getElementById('pb_msg');
+                updateStatus('Getting your location...', 'loading');
+                
+                if (!navigator.geolocation) {
+                    updateStatus('Geolocation not supported by your browser.', 'error');
+                    pbEnsureMap();
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    pbEnsureMap(lat, lon, 13);
+                    pbClearMarkers();
+                    
+                    updateStatus('Checking nearby availability...', 'loading');
+                    
+                    // Simulate API call with timeout
+                    setTimeout(() => {
+                        // Simulated response data
+                        const data = {
+                            nearby: [
+                                {
+                                    name: "City Central Blood Bank",
+                                    distance_km: 2.5,
+                                    stock_after: 42,
+                                    lat: lat + 0.01,
+                                    lon: lon + 0.01
+                                },
+                                {
+                                    name: "General Hospital Blood Center",
+                                    distance_km: 3.8,
+                                    stock_after: 28,
+                                    lat: lat - 0.015,
+                                    lon: lon + 0.02
+                                },
+                                {
+                                    name: "Community Donation Center",
+                                    distance_km: 5.2,
+                                    stock_after: 15,
+                                    lat: lat + 0.02,
+                                    lon: lon - 0.01
+                                },
+                                {
+                                  name: "Regional Medical Center",
+                                  distance_km: 6.7,
+                                  stock_after: 35,
+                                  lat: lat + 0.025,
+                                  lon: lon + 0.015
+                                },
+                                {
+                                    name: "Unity Blood Services",
+                                    distance_km: 7.3,
+                                    stock_after: 22,
+                                    lat: lat - 0.02,
+                                    lon: lon - 0.025
+                                }
+                            ]
+                        };
+                        
+                        const rows = data.nearby || [];
+                        if (!rows.length) {
+                            updateStatus('No blood banks found in range. Try another group/component or increase radius.', 'error');
+                            return;
+                        }
+                        
+                        // Add markers to map
+                        rows.forEach(b => {
+                            pbAddMarker(b.lat, b.lon, `
+                                <strong>${b.name}</strong><br/>
+                                Distance: ${Number(b.distance_km).toFixed(2)} km<br/>
+                                Available units: <b>${Number(b.stock_after).toFixed(0)}</b>
+                            `);
+                        });
+                        
+                        // Fit bounds to markers
+                        const group = L.featureGroup(pbMarkers);
+                        pbMap.fitBounds(group.getBounds().pad(0.2));
+                        
+                        // Display results
+                        displayResults(rows);
+                        
+                        updateStatus(`Found ${rows.length} blood bank(s) within ${document.getElementById('pb_radius').value || 12} km.`, 'success');
+                    }, 2000);
+                }, (err) => {
+                    updateStatus('Location error: please allow location access (HTTPS or localhost required).', 'error');
+                    pbEnsureMap(); // default center
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            });
+            
+            // Event listeners
+            tryNowBtn.addEventListener('click', function() {
+                mapExpansion.classList.add('expanded');
+                if (feature3) feature3.classList.add('expanded');
+                // Initialize map if not already done
+                if (typeof pbMap === 'undefined') {
+                    setTimeout(function() {
+                        pbEnsureMap();
+                    }, 100);
+                }
+            });
+            
+            closeMapBtn.addEventListener('click', function() {
+                mapExpansion.classList.remove('expanded');
+                if (feature3) feature3.classList.remove('expanded');
+            });
+            
+            modalClose.addEventListener('click', closePrebookModal);
+            
+            prebookForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Prebooking request submitted successfully!');
+                closePrebookModal();
+            });
+            
+            viewAllBtn.addEventListener('click', showAllResults);
+            
+            backToMapBtn.addEventListener('click', hideAllResults);
+            
+            // Close modal when clicking outside
+            prebookModal.addEventListener('click', function(e) {
+                if (e.target === prebookModal) {
+                    closePrebookModal();
+                }
+            });
+        });
+    </script>
+    </div>
+  </div>
+  </section>
+  <section class="info1" id="aboutdonate">
+    <div class="information">
+      <h2>Why Donate Blood</h2>
+      <p>Blood donation saves lives. Patients undergoing surgery, cancer treatment, or emergency trauma care all require blood transfusions to survive. This vital resource cannot be manufactured. It only comes from voluntary donors. The process is simple, safe, and takes less than an hour. Your single donation can help up to three patients. Regular donors also benefit from free health screenings and potential cardiovascular benefits. With constant demand but limited supply, your donation directly addresses critical shortages. Give blood today be someone's lifeline.</p>
+    </div>
+  </section>
+  <section class="blood-donation-section">
+        <!-- Animated blood cells -->
+        <div class="blood-cell" style="width: 250px; height: 250px; top: -125px; right: -125px;"></div>
+        <div class="blood-cell" style="width: 150px; height: 150px; bottom: 100px; left: 50px;"></div>
+        <div class="blood-cell" style="width: 100px; height: 100px; top: 200px; left: 150px;"></div>
+        
+        <!-- Blood drips -->
+        <div class="blood-drip" style="left: 15%; animation: drip 8s infinite;"></div>
+        <div class="blood-drip" style="left: 85%; animation: drip 10s infinite 1s;"></div>
+        <div class="blood-drip" style="left: 65%; animation: drip 9s infinite 0.5s;"></div>
+        
+        <div class="section-head">
+            <h1>Know About Blood Donation</h1>
+            <p>Select a blood type to see donation compatibility - who you can donate to and receive from</p>
+        </div>
+        
+        <div class="content-container">
+            <div class="blood-groups">
+                <div class="blood-group" data-type="A+">
+                    <div class="blood-type">A+</div>
+                    <div class="blood-group-name">A Positive</div>
+                </div>
+                <div class="blood-group" data-type="A-">
+                    <div class="blood-type">A-</div>
+                    <div class="blood-group-name">A Negative</div>
+                </div>
+                <div class="blood-group" data-type="B+">
+                    <div class="blood-type">B+</div>
+                    <div class="blood-group-name">B Positive</div>
+                </div>
+                <div class="blood-group" data-type="B-">
+                    <div class="blood-type">B-</div>
+                    <div class="blood-group-name">B Negative</div>
+                </div>
+                <div class="blood-group" data-type="AB+">
+                    <div class="blood-type">AB+</div>
+                    <div class="blood-group-name">AB Positive</div>
+                </div>
+                <div class="blood-group" data-type="AB-">
+                    <div class="blood-type">AB-</div>
+                    <div class="blood-group-name">AB Negative</div>
+                </div>
+                <div class="blood-group" data-type="O+">
+                    <div class="blood-type">O+</div>
+                    <div class="blood-group-name">O Positive</div>
+                </div>
+                <div class="blood-group" data-type="O-">
+                    <div class="blood-type">O-</div>
+                    <div class="blood-group-name">O Negative</div>
+                </div>
+            </div>
+            
+            <div class="compatibility-info">
+                <div class="info-header">
+                    <h2>Blood Compatibility</h2>
+                </div>
+                
+                <div class="info-content">
+                    <div class="selected-group">
+                        <h3 class="blood-type-display">Select a blood type</h3>
+                    </div>
+                    
+                    <div class="donation-direction">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    
+                    <div class="compatibility-row">
+                        <div class="compatibility-box can-give">
+                            <div class="compatibility-title">Can Donate To</div>
+                            <div class="compatibility-list">
+                                <span class="compatibility-item">Select a type</span>
+                            </div>
+                        </div>
+                        
+                        <div class="compatibility-box can-receive">
+                            <div class="compatibility-title">Can Receive From</div>
+                            <div class="compatibility-list">
+                                <span class="compatibility-item">Select a type</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="instructions">
+                        <p>Blood donation saves lives. Every donation can help up to 3 people.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- <div class="footer">
+            <p>Blood donation saves lives. Every donation can help up to 3 people.</p>
+        </div> -->
+    </section>
+    <script>
+    // Blood compatibility data
+        const bloodCompatibility = {
+            "A+": {
+                give: ["A+", "AB+"],
+                receive: ["A+", "A-", "O+", "O-"]
+            },
+            "A-": {
+                give: ["A+", "A-", "AB+", "AB-"],
+                receive: ["A-", "O-"]
+            },
+            "B+": {
+                give: ["B+", "AB+"],
+                receive: ["B+", "B-", "O+", "O-"]
+            },
+            "B-": {
+                give: ["B+", "B-", "AB+", "AB-"],
+                receive: ["B-", "O-"]
+            },
+            "AB+": {
+                give: ["AB+"],
+                receive: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+            },
+            "AB-": {
+                give: ["AB+", "AB-"],
+                receive: ["AB-", "A-", "B-", "O-"]
+            },
+            "O+": {
+                give: ["A+", "B+", "AB+", "O+"],
+                receive: ["O+", "O-"]
+            },
+            "O-": {
+                give: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+                receive: ["O-"]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const bloodGroups = document.querySelectorAll('.blood-group');
+            const bloodTypeDisplay = document.querySelector('.blood-type-display');
+            const canGiveList = document.querySelector('.can-give .compatibility-list');
+            const canReceiveList = document.querySelector('.can-receive .compatibility-list');
+            
+            // Set initial active blood group
+            bloodGroups[0].classList.add('active');
+            updateCompatibility(bloodGroups[0].dataset.type);
+            
+            // Add click event to each blood group
+            bloodGroups.forEach(group => {
+                group.addEventListener('click', function() {
+                    // Remove active class from all groups
+                    bloodGroups.forEach(g => g.classList.remove('active'));
+                    
+                    // Add active class to clicked group
+                    this.classList.add('active');
+                    
+                    // Update compatibility information
+                    updateCompatibility(this.dataset.type);
+                });
+            });
+            
+            // Function to update compatibility information
+            function updateCompatibility(bloodType) {
+                bloodTypeDisplay.textContent = bloodType;
+                
+                // Clear previous lists
+                canGiveList.innerHTML = '';
+                canReceiveList.innerHTML = '';
+                
+                // Add can give to list
+                bloodCompatibility[bloodType].give.forEach(type => {
+                    const item = document.createElement('span');
+                    item.classList.add('compatibility-item');
+                    item.textContent = type;
+                    canGiveList.appendChild(item);
+                });
+                
+                // Add can receive from list
+                bloodCompatibility[bloodType].receive.forEach(type => {
+                    const item = document.createElement('span');
+                    item.classList.add('compatibility-item');
+                    item.textContent = type;
+                    canReceiveList.appendChild(item);
+                });
+            }
+            
+            // Create blood drip animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes drip {
+                    0% { height: 50px; top: -50px; }
+                    50% { height: 100px; top: 100vh; }
+                    51% { opacity: 0; }
+                    52% { height: 50px; top: -50px; opacity: 1; }
+                    100% { height: 50px; top: -50px; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+      <section class="donation-process">
+        <!-- Background elements -->
+        <div class="glow-effect"></div>
+        <div class="glow-effect"></div>
+        
+        <div class="section-header">
+            <h1>Blood <span style="color: white;">Donation</span> Process</h1>
+            <p>Your journey of saving lives starts here. Learn about the simple steps to become a blood donor.</p>
+        </div>
+        
+        <div class="process-container">
+            <!-- Curved flow line -->
+            <div class="flow-line-container">
+                <svg class="flow-line" viewBox="0 0 300 1000" preserveAspectRatio="none">
+                    <path d="M150,0 C50,150 250,300 150,450 C50,600 250,750 150,900 C50,1050 250,1200 150,1350" 
+                          stroke="url(#gradient)" 
+                          stroke-width="8" 
+                          fill="none" 
+                          stroke-linecap="round" />
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="rgba(255, 107, 107, 0.3)" />
+                            <stop offset="20%" stop-color="rgba(255, 107, 107, 0.9)" />
+                            <stop offset="80%" stop-color="rgba(255, 107, 107, 0.9)" />
+                            <stop offset="100%" stop-color="rgba(255, 107, 107, 0.3)" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            
+            <!-- Step 1 (Left) -->
+            <div class="process-step step-left">
+                <div class="step-content">
+                    <div class="step-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <h3 class="step-title">Registration</h3>
+                    <p class="step-description">You'll complete a donor registration form with your personal information and consent to donate blood.</p>
+                </div>
+                <div class="connection-point"></div>
+                <div class="horizontal-line"></div>
+                <div class="image-block">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="step-number">1</div>
+            </div>
+            
+            <!-- Step 2 (Right) -->
+            <div class="process-step step-right">
+                <div class="step-content">
+                    <div class="step-icon"><i class="fas fa-stethoscope"></i></div>
+                    <h3 class="step-title">Health Screening</h3>
+                    <p class="step-description">A healthcare professional will check your temperature, pulse, blood pressure, and hemoglobin levels.</p>
+                </div>
+                <div class="connection-point"></div>
+                <div class="horizontal-line"></div>
+                <div class="image-block">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="step-number">2</div>
+            </div>
+            
+            <!-- Step 3 (Left) -->
+            <div class="process-step step-left">
+                <div class="step-content">
+                    <div class="step-icon"><i class="fas fa-tint"></i></div>
+                    <h3 class="step-title">Donation</h3>
+                    <p class="step-description">You'll be seated comfortably while a pint of blood is drawn. The process takes about 8-10 minutes.</p>
+                </div>
+                <div class="connection-point"></div>
+                <div class="horizontal-line"></div>
+                <div class="image-block">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+                <div class="step-number">3</div>
+            </div>
+            
+            <!-- Step 4 (Right) -->
+            <div class="process-step step-right">
+                <div class="step-content">
+                    <div class="step-icon"><i class="fas fa-coffee"></i></div>
+                    <h3 class="step-title">Refreshment</h3>
+                    <p class="step-description">After donating, you'll enjoy light refreshments to help your body adjust to the slight decrease in fluid.</p>
+                </div>
+                <div class="connection-point"></div>
+                <div class="horizontal-line"></div>
+                <div class="image-block">
+                    <i class="fas fa-cookie-bite"></i>
+                </div>
+                <div class="step-number">4</div>
+            </div>
+            
+            <!-- Step 5 (Left) -->
+            <div class="process-step step-left">
+                <div class="step-content">
+                    <div class="step-icon"><i class="fas fa-vial"></i></div>
+                    <h3 class="step-title">Testing & Processing</h3>
+                    <p class="step-description">Your blood will be tested, processed, and distributed to hospitals where it's needed most.</p>
+                </div>
+                <div class="connection-point"></div>
+                <div class="horizontal-line"></div>
+                <div class="image-block">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <div class="step-number">5</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const processSteps = document.querySelectorAll('.process-step');
+            
+            // Create background particles with random positions
+            function createParticles() {
+                const donationProcess = document.querySelector('.donation-process');
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random properties
+                    const size = Math.random() * 8 + 2;
+                    const posX = Math.random() * 100;
+                    const posY = Math.random() * 100;
+                    const delay = Math.random() * 20;
+                    const duration = Math.random() * 10 + 20;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}%`;
+                    particle.style.top = `${posY}%`;
+                    particle.style.animationDelay = `${delay}s`;
+                    particle.style.animationDuration = `${duration}s`;
+                    
+                    donationProcess.appendChild(particle);
+                }
+            }
+            
+            createParticles();
+            
+            // Function to check if element is in viewport
+            function isInViewport(element) {
+                const rect = element.getBoundingClientRect();
+                return (
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+                    rect.bottom >= (window.innerHeight || document.documentElement.clientHeight) * 0.2
+                );
+            }
+            
+            // Function to handle scroll event
+            function checkScroll() {
+                processSteps.forEach((step, index) => {
+                    if (isInViewport(step)) {
+                        setTimeout(() => {
+                            step.classList.add('visible');
+                        }, index * 200);
+                    } else {
+                        step.classList.remove('visible');
+                    }
+                });
+            }
+            
+            // Initial check
+            checkScroll();
+            
+            // Listen for scroll events
+            window.addEventListener('scroll', checkScroll);
+        });
+    </script>
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section footer-about">
+                    <h3>HemoFlow Locator</h3>
+                    <p>Using AI technology to connect blood donors with those in need quickly and efficiently. Saving lives through technology and community.</p>
+                    <div class="contact-info">
+                        <div><i class="fas fa-map-marker-alt"></i> 123 Medical Drive, Health City</div>
+                        <div><i class="fas fa-phone"></i> +1 (800) 555-HEMO</div>
+                        <div><i class="fas fa-envelope"></i> support@hemoflowlocator.org</div>
+                    </div>
+                </div>
+                
+                <div class="footer-section footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Find Blood Banks</a></li>
+                        <li><a href="#">Request Blood</a></li>
+                        <li><a href="#">AI Distribution</a></li>
+                        <li><a href="#">Emergency Services</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section footer-links">
+                    <h3>Information</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Blood Donation Tips</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on blood drives and urgent needs in your area.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email Address" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 HemoFlow Locator. All rights reserved. | <a href="#" style="color: #ff6b6b;">Privacy Policy</a> | <a href="#" style="color: #ff6b6b;">Terms of Service</a></p>
+                <div class="ai-badge">Powered by AI Blood Distribution Technology</div>
+            </div>
+        </div>
+    </footer>
+<script>
+  (function(){
+    if(!window.chatbase||window.chatbase("getState")!=="initialized") {
+      window.chatbase=(...arguments)=>{
+        if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="utFrRdffGwlQd99XdpFJh";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.getElementById('navbar');
+    const heroSection = document.getElementById('home');
+    const signin = document.getElementById('signin');
+    const signup = document.getElementById('signup');
+    const profileIcon = document.getElementById('profile-icon');
+    let prevScrollpos = window.pageYOffset;
+
+
+    function isPastHeroSection() {
+                const navbarHeight = navbar.offsetHeight;
+                const heroBottom = heroSection.offsetTop + heroSection.offsetHeight - navbarHeight;
+                return window.pageYOffset > heroBottom;
+            }
+            
+            window.onscroll = function() {
+                const currentScrollPos = window.pageYOffset;
+                
+                // Only apply the hide/show behavior if we're past the first section
+                if (isPastHeroSection()) {
+                    if (prevScrollpos > currentScrollPos) {
+                        // Scrolling up - show navbar
+                        navbar.style.top = "0";
+                    } else {
+                        // Scrolling down - hide navbar
+                        navbar.style.top = "-80px";
+                    }
+                } else {
+                    // Always show navbar when in the first section
+                    navbar.style.top = "0";
+                }
+                prevScrollpos = currentScrollPos;
+            };
+
+    // Function to check login status
+    function checkLoginStatus() {
+        // Check if user is logged in from storage
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true' || 
+                          sessionStorage.getItem('isLoggedIn') === 'true';
+        
+        if (isLoggedIn) {
+            signin.style.display = 'none';
+            signup.style.display = 'none';
+            profileIcon.style.display = 'block';
+        } else {
+            signin.style.display = 'block';
+            signup.style.display = 'block';
+            profileIcon.style.display = 'none';
+        }
+    }
+    
+    // Check login status on page load
+    checkLoginStatus();
+    
+    // Login form handling
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            
+            fetch('/login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Set login status in storage
+                    localStorage.setItem('isLoggedIn', 'true');
+                    // Redirect to index page
+                    window.location.href = data.redirect || '/';
+                } else {
+                    alert(data.error || 'Login failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Login failed. Please try again.');
+            });
+        });
+    }
+    
+    // Signup form handling
+    const signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(signupForm);
+            
+            fetch('/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Set login status in storage
+                    localStorage.setItem('isLoggedIn', 'true');
+                    // Redirect to index page
+                    window.location.href = data.redirect || '/';
+                } else {
+                    alert(data.error || 'Registration failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Registration failed. Please try again.');
+            });
+        });
+    }
+    
+    // Logout functionality (if you have a logout button)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            fetch('/logout', {
+                method: 'POST'
+            })
+            .then(() => {
+                localStorage.setItem('isLoggedIn', 'false');
+                sessionStorage.setItem('isLoggedIn', 'false');
+                window.location.href = '/';
+            });
+        });
+    }
+            
+            // Function to check if we've scrolled past the first section
+            
+});
+</script>
+</html>

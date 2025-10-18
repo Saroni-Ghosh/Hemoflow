@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodBank Profile | Donor Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a25 100%);
+            color: #f0f6fc;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(13, 17, 23, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        
+        .logo span {
+            color: #ff4444;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .back-button, .logout-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: #ff4444;
+        }
+        
+        .logout-button:hover {
+            background: rgba(255, 68, 68, 0.4);
+            border-color: #ff4444;
+        }
+        
+        .profile-hero {
+            display: flex;
+            padding: 40px;
+            gap: 40px;
+            background: linear-gradient(to right, rgba(13, 17, 23, 0.95), rgba(22, 27, 34, 0.95));
+            align-items: center;
+        }
+        
+        .animated-hero {
+            flex: 0 0 350px;
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .blood-drop {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            animation: pulse 2s infinite ease-in-out;
+            box-shadow: 0 0 50px rgba(255, 68, 68, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 80px;
+        }
+        
+        .blood-drop::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 30px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .profile-card {
+            flex: 1;
+            background: linear-gradient(145deg, #161b22, #1c222b);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+        
+        .profile-email {
+            color: #8b949e;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(13, 17, 23, 0.4);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .detail-item:hover {
+            background: rgba(255, 68, 68, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .detail-item i {
+            color: #ffffff;
+            font-size: 18px;
+            width: 24px;
+        }
+        
+        .dashboard-content {
+            padding: 0 40px 40px;
+        }
+        
+        .section-title {
+            font-size: 28px;
+            color: #ffffff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title i {
+            color: #ff4444;
+        }
+        
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        .info-card {
+            background: linear-gradient(145deg, #161b22, #1c222b);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .info-card:nth-child(1) { animation-delay: 0.2s; }
+        .info-card:nth-child(2) { animation-delay: 0.4s; }
+        .info-card:nth-child(3) { animation-delay: 0.6s; }
+        .info-card:nth-child(4) { animation-delay: 0.8s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+        
+        .card-title {
+            color: #ffffff;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 15px 0;
+        }
+        
+        .card-desc {
+            font-size: 16px;
+            color: #8b949e;
+            line-height: 1.5;
+        }
+        
+        .demand-indicator {
+            height: 12px;
+            background: #2d333b;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .demand-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #cc0000);
+            border-radius: 10px;
+            animation: fillWidth 1.5s ease-out;
+        }
+        
+        @keyframes fillWidth {
+            from { width: 0%; }
+            to { width: attr(data-width); }
+        }
+        
+        .high { width: 90%; }
+        .medium { width: 60%; }
+        .low { width: 30%; }
+        
+        .demand-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #8b949e;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 40px;
+            margin-top: 50px;
+            background: rgba(13, 17, 23, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            color: #8b949e;
+        }
+        
+        @media (max-width: 1024px) {
+            .profile-hero {
+                flex-direction: column;
+            }
+            
+            .animated-hero {
+                flex: 1;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+            
+            .header-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .profile-hero {
+                padding: 20px;
+            }
+            
+            .dashboard-content {
+                padding: 0 20px 20px;
+            }
+            
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .blood-drop {
+                width: 150px;
+                height: 150px;
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Hemo<span>Flow</span></div>
+            <div class="header-buttons">
+                <a href="{{ url_for('index') }}" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+                <button class="logout-button" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </button>
+            </div>
+        </header>
+        
+        <div class="profile-hero">
+            <div class="animated-hero">
+                <div class="blood-drop">
+                    <i class="fas fa-tint"></i>
+                </div>
+            </div>
+            
+            <div class="profile-card">
+                <h2 id="user-name" class="profile-name">Sarah Johnson</h2>
+                <p id="user-email" class="profile-email">sarah@example.com</p>
+                
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>West Bengal, India</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-heart"></i>
+                        <span>Last donation: 45 days ago</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-tint"></i>
+                        <span>Hemoglobin: 14.2 g/dL</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Blood Type: O+</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-content">
+            <h2 class="section-title">
+                Donor Dashboard
+            </h2>
+            
+            <div class="info-cards">
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-tint"></i>
+                        Your Blood Type (O+)
+                    </h3>
+                    <div class="card-value">High Demand</div>
+                    <div class="demand-indicator">
+                        <div class="demand-fill high"></div>
+                    </div>
+                    <div class="demand-labels">
+                        <span>Low</span>
+                        <span>Medium</span>
+                        <span>High</span>
+                    </div>
+                    <p class="card-desc">Your blood type is in high demand in your area. Consider scheduling a donation soon.</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Next Eligibility
+                    </h3>
+                    <div class="card-value">45 days</div>
+                    <p class="card-desc">You can donate again in 45 days. The minimum interval between donations is 90 days.</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-stethoscope"></i>
+                        Health Status
+                    </h3>
+                    <div class="card-value">Excellent</div>
+                    <p class="card-desc">All your health indicators are optimal for blood donation. Keep up the good health!</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-star"></i>
+                        Donor Level
+                    </h3>
+                    <div class="card-value">Gold</div>
+                    <p class="card-desc">You're among our top 10% most valued donors. Thank you for your continued support!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>HemoFlow &copy; 2025 | Saving Lives Through Technology</p>
+            <p>Your donations have potentially helped save up to 36 lives</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/user')
+                .then(response => {
+                    if (!response.ok) throw new Error('Not authenticated');
+                    return response.json();
+                })
+                .then(user => {
+                    // Update profile information
+                    document.getElementById('user-name').textContent = user.displayName;
+                    document.getElementById('user-email').textContent = user.email;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Redirect to login if not authenticated
+                    window.location.href = "{{ url_for('index') }}";
+                });
+                
+            // Add hover effects to info cards
+            const infoCards = document.querySelectorAll('.info-card');
+            infoCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.3)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
+                });
+            });
+            
+            // Logout functionality
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "{{ url_for('index') }}";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
