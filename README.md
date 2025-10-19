@@ -33,5 +33,5 @@ HemoFlow is an AI-enabled blood bank management system that predicts blood deman
  1. **Saroni Ghosh**:Frontend Developer
  2. **Dwaipayan Biswas**:Backend Developer
  3. **Debasish Halder**:Machine Learning engineer
- 4. **Arkajeet Nag:**UI/UX and Github Contributor
- 5. **Ipsita Rana:**Cloud Engineer
+ 4. **Arkajeet Nag**:UI/UX and Github Contributor
+ 5. **Ipsita Rana**:Cloud Engineer
